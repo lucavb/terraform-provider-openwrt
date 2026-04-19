@@ -1,6 +1,7 @@
 package wifiiface
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -41,6 +42,13 @@ const (
 	encryptionMethodSAEMixed             = "sae-mixed"
 	encryptionMethodUCIOption            = "encryption"
 
+	ieee80211wAttribute            = "ieee80211w"
+	ieee80211wAttributeDescription = "802.11w management frame protection. Must be one of 0 (disabled), 1 (optional), or 2 (required). OpenWrt may override this for WPA3-related encryption modes."
+	ieee80211wDisabled             = 0
+	ieee80211wOptional             = 1
+	ieee80211wRequired             = 2
+	ieee80211wUCIOption            = "ieee80211w"
+
 	isolateClientsAttribute            = "isolate"
 	isolateClientsAttributeDescription = "Isolate wireless clients from each other."
 	isolateClientsUCIOption            = "isolate"
@@ -67,6 +75,10 @@ const (
 	ssidAttribute            = "ssid"
 	ssidAttributeDescription = "The broadcasted SSID of the wireless network. This is what actual clients will see the network as."
 	ssidUCIOption            = "ssid"
+
+	wpaGroupRekeyAttribute            = "wpa_group_rekey"
+	wpaGroupRekeyAttributeDescription = "WPA group key rekey interval in seconds. Must be at least 1."
+	wpaGroupRekeyUCIOption            = "wpa_group_rekey"
 
 	uciConfig = "wireless"
 	uciType   = "wifi-iface"
@@ -108,6 +120,24 @@ var (
 				encryptionMethodPSKTKIPCCMP,
 				encryptionMethodSAE,
 				encryptionMethodSAEMixed,
+			),
+		},
+	}
+
+	ieee80211wSchemaAttribute = lucirpcglue.Int64SchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
+		Description:       ieee80211wAttributeDescription,
+		ReadResponse:      lucirpcglue.ReadResponseOptionInt64(modelSetIEEE80211W, ieee80211wAttribute, ieee80211wUCIOption),
+		ResourceExistence: lucirpcglue.NoValidation,
+		UpsertRequest:     lucirpcglue.UpsertRequestOptionInt64(modelGetIEEE80211W, ieee80211wAttribute, ieee80211wUCIOption),
+		Validators: []validator.Int64{
+			int64validator.OneOf(
+				ieee80211wDisabled,
+				ieee80211wOptional,
+				ieee80211wRequired,
+			),
+			lucirpcglue.RequiresAttributeEqualString(
+				path.MatchRoot(modeAttribute),
+				modeAP,
 			),
 		},
 	}
@@ -172,6 +202,7 @@ var (
 	schemaAttributes = map[string]lucirpcglue.SchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
 		deviceAttribute:           deviceSchemaAttribute,
 		encryptionMethodAttribute: encryptionMethodSchemaAttribute,
+		ieee80211wAttribute:       ieee80211wSchemaAttribute,
 		isolateClientsAttribute:   isolateClientsSchemaAttribute,
 		keyAttribute:              keySchemaAttribute,
 		krackWorkaroundAttribute:  krackWorkaroundSchemaAttribute,
@@ -179,6 +210,7 @@ var (
 		modeAttribute:             modeSchemaAttribute,
 		networkAttribute:          networkSchemaAttribute,
 		ssidAttribute:             ssidSchemaAttribute,
+		wpaGroupRekeyAttribute:    wpaGroupRekeySchemaAttribute,
 	}
 
 	ssidSchemaAttribute = lucirpcglue.StringSchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
@@ -186,6 +218,20 @@ var (
 		ReadResponse:      lucirpcglue.ReadResponseOptionString(modelSetSSID, ssidAttribute, ssidUCIOption),
 		ResourceExistence: lucirpcglue.Required,
 		UpsertRequest:     lucirpcglue.UpsertRequestOptionString(modelGetSSID, ssidAttribute, ssidUCIOption),
+	}
+
+	wpaGroupRekeySchemaAttribute = lucirpcglue.Int64SchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
+		Description:       wpaGroupRekeyAttributeDescription,
+		ReadResponse:      lucirpcglue.ReadResponseOptionInt64(modelSetWPAGroupRekey, wpaGroupRekeyAttribute, wpaGroupRekeyUCIOption),
+		ResourceExistence: lucirpcglue.NoValidation,
+		UpsertRequest:     lucirpcglue.UpsertRequestOptionInt64(modelGetWPAGroupRekey, wpaGroupRekeyAttribute, wpaGroupRekeyUCIOption),
+		Validators: []validator.Int64{
+			int64validator.AtLeast(1),
+			lucirpcglue.RequiresAttributeEqualString(
+				path.MatchRoot(modeAttribute),
+				modeAP,
+			),
+		},
 	}
 )
 
@@ -212,6 +258,7 @@ func NewResource() resource.Resource {
 type model struct {
 	Device           types.String `tfsdk:"device"`
 	EncryptionMethod types.String `tfsdk:"encryption"`
+	IEEE80211W       types.Int64  `tfsdk:"ieee80211w"`
 	Id               types.String `tfsdk:"id"`
 	IsolateClients   types.Bool   `tfsdk:"isolate"`
 	Key              types.String `tfsdk:"key"`
@@ -219,10 +266,12 @@ type model struct {
 	Mode             types.String `tfsdk:"mode"`
 	Network          types.String `tfsdk:"network"`
 	SSID             types.String `tfsdk:"ssid"`
+	WPAGroupRekey    types.Int64  `tfsdk:"wpa_group_rekey"`
 }
 
 func modelGetDevice(m model) types.String           { return m.Device }
 func modelGetEncryptionMethod(m model) types.String { return m.EncryptionMethod }
+func modelGetIEEE80211W(m model) types.Int64        { return m.IEEE80211W }
 func modelGetId(m model) types.String               { return m.Id }
 func modelGetIsolateClients(m model) types.Bool     { return m.IsolateClients }
 func modelGetKey(m model) types.String              { return m.Key }
@@ -230,9 +279,11 @@ func modelGetKRACKWorkaround(m model) types.Bool    { return m.KRACKWorkaround }
 func modelGetMode(m model) types.String             { return m.Mode }
 func modelGetNetwork(m model) types.String          { return m.Network }
 func modelGetSSID(m model) types.String             { return m.SSID }
+func modelGetWPAGroupRekey(m model) types.Int64     { return m.WPAGroupRekey }
 
 func modelSetDevice(m *model, value types.String)           { m.Device = value }
 func modelSetEncryptionMethod(m *model, value types.String) { m.EncryptionMethod = value }
+func modelSetIEEE80211W(m *model, value types.Int64)        { m.IEEE80211W = value }
 func modelSetId(m *model, value types.String)               { m.Id = value }
 func modelSetIsolateClients(m *model, value types.Bool)     { m.IsolateClients = value }
 func modelSetKey(m *model, value types.String)              { m.Key = value }
@@ -240,3 +291,4 @@ func modelSetKRACKWorkaround(m *model, value types.Bool)    { m.KRACKWorkaround 
 func modelSetMode(m *model, value types.String)             { m.Mode = value }
 func modelSetNetwork(m *model, value types.String)          { m.Network = value }
 func modelSetSSID(m *model, value types.String)             { m.SSID = value }
+func modelSetWPAGroupRekey(m *model, value types.Int64)     { m.WPAGroupRekey = value }

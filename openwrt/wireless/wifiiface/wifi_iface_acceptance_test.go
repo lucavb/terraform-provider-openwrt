@@ -97,12 +97,14 @@ resource "openwrt_wireless_wifi_iface" "testing" {
 resource "openwrt_wireless_wifi_iface" "testing" {
 	device = "device-testing"
 	encryption = "sae"
+	ieee80211w = 1
 	id = "testing"
 	key = "password"
 	mode = "ap"
 	network = "network-testing"
 	ssid = "ssid-testing"
 	wpa_disable_eapol_key_retries = true
+	wpa_group_rekey = 3600
 }
 `,
 			providerBlock,
@@ -111,11 +113,13 @@ resource "openwrt_wireless_wifi_iface" "testing" {
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "id", "testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "device", "device-testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "encryption", "sae"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "ieee80211w", "1"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "key", "password"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "mode", "ap"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "network", "network-testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "ssid", "ssid-testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "wpa_disable_eapol_key_retries", "true"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "wpa_group_rekey", "3600"),
 		),
 	}
 

@@ -29,11 +29,13 @@ data "openwrt_wireless_wifi_iface" "testing" {
 
 - `device` (String) Name of the physical device. This name is what the device is known as in LuCI/UCI, or the `id` field in Terraform.
 - `encryption` (String) Encryption method. Currently, only PSK encryption methods are supported. Must be one of: "none", "psk", "psk2", "psk2+aes", "psk2+ccmp", "psk2+tkip", "psk2+tkip+aes", "psk2+tkip+ccmp", "psk+aes", "psk+ccmp", "psk-mixed", "psk-mixed+aes", "psk-mixed+ccmp", "psk-mixed+tkip", "psk-mixed+tkip+aes", "psk-mixed+tkip+ccmp", "psk+tkip", "psk+tkip+aes", "psk+tkip+ccmp", "sae", "sae-mixed".
+- `ieee80211w` (Number) 802.11w management frame protection. Must be one of 0 (disabled), 1 (optional), or 2 (required). OpenWrt may override this for WPA3-related encryption modes.
 - `isolate` (Boolean) Isolate wireless clients from each other.
 - `key` (String, Sensitive) The pre-shared passphrase from which the pre-shared key will be derived. The clear text key has to be 8-63 characters long.
 - `mode` (String) The operation mode of the wireless network interface controller.. Currently only "ap" is supported.
 - `network` (String) Network interface to attach the wireless network. This name is what the interface is known as in UCI, or the `id` field in Terraform.
 - `ssid` (String) The broadcasted SSID of the wireless network. This is what actual clients will see the network as.
 - `wpa_disable_eapol_key_retries` (Boolean) Enable WPA key reinstallation attack (KRACK) workaround. This should be `true` to enable KRACK workaround (you almost surely want this enabled).
+- `wpa_group_rekey` (Number) WPA group key rekey interval in seconds. Must be at least 1.
 
 
