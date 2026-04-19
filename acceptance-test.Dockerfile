@@ -1,4 +1,4 @@
-FROM openwrtorg/rootfs:x86_64-22.03.3@sha256:bf650d3c71a5d31c51c50228c2991c6f41ef672080f911f28ce61e6ea4d54637
+FROM openwrt/rootfs:x86_64-22.03.3@sha256:42bfe5aded99ddfbde5b9ba4c91d0826069d34eef6b537a6a510a5c4edf9147b
 
 RUN mkdir /var/lock
 RUN opkg update && opkg install \
@@ -21,3 +21,7 @@ HEALTHCHECK --interval=5s CMD curl \
     --fail \
     --no-progress-meter \
     http://localhost/cgi-bin/luci/rpc/auth
+
+EXPOSE 80 22
+
+CMD ["/sbin/init"]
