@@ -29,10 +29,12 @@ data "openwrt_wireless_wifi_device" "testing" {
 
 - `band` (String) Channel width. Must be one of: "2g", "5g", "6g".
 - `cell_density` (Number) Configures data rates based on the coverage cell density. Must be one of 0, 1, 2, 3.
-- `channel` (String) The wireless channel. Currently, only "auto" is supported.
+- `channel` (String) The wireless channel. Must be "auto" or a positive integer channel number represented as a string (e.g. "1", "6", "11").
 - `country` (String) Two-digit country code. E.g. "US".
+- `hwmode` (String) Wireless hardware mode. OpenWrt and driver support varies (e.g. `11g`, `11a`).
 - `htmode` (String) Channel width. Must be one of: "HE20", "HE40", "HE80", "HE160", "HT20", "HT40", "HT40-", "HT40+", "NONE", "VHT20", "VHT40", "VHT80", "VHT160".
 - `path` (String) Path of the device in `/sys/devices`.
+- `txpower` (Number) Transmit power in dBm.
 - `type` (String) The type of device. Currently only "mac80211" is supported.
 
 

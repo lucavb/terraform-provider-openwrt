@@ -34,8 +34,10 @@ resource "openwrt_wireless_wifi_device" "five_ghz" {
 
 resource "openwrt_wireless_wifi_iface" "home" {
   device                        = openwrt_wireless_wifi_device.five_ghz.id
+  disassoc_low_ack              = false
   encryption                    = "sae"
   id                            = "wifinet0"
+  ieee80211r                    = false
   key                           = "password"
   mode                          = "ap"
   network                       = openwrt_network_interface.home.id
@@ -57,7 +59,9 @@ resource "openwrt_wireless_wifi_iface" "home" {
 
 ### Optional
 
+- `disassoc_low_ack` (Boolean) Disconnect clients that fail to acknowledge enough frames. Set to `false` to keep flaky clients connected.
 - `encryption` (String) Encryption method. Currently, only PSK encryption methods are supported. Must be one of: "none", "psk", "psk2", "psk2+aes", "psk2+ccmp", "psk2+tkip", "psk2+tkip+aes", "psk2+tkip+ccmp", "psk+aes", "psk+ccmp", "psk-mixed", "psk-mixed+aes", "psk-mixed+ccmp", "psk-mixed+tkip", "psk-mixed+tkip+aes", "psk-mixed+tkip+ccmp", "psk+tkip", "psk+tkip+aes", "psk+tkip+ccmp", "sae", "sae-mixed".
+- `ieee80211r` (Boolean) Enable 802.11r fast transition.
 - `isolate` (Boolean) Isolate wireless clients from each other.
 - `key` (String, Sensitive) The pre-shared passphrase from which the pre-shared key will be derived. The clear text key has to be 8-63 characters long.
 - `wpa_disable_eapol_key_retries` (Boolean) Enable WPA key reinstallation attack (KRACK) workaround. This should be `true` to enable KRACK workaround (you almost surely want this enabled).

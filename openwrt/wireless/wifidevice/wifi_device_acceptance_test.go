@@ -21,7 +21,9 @@ func TestDataSourceAcceptance(t *testing.T) {
 		t,
 	)
 	options := lucirpc.Options{
-		"channel": lucirpc.String("auto"),
+		"channel": lucirpc.String("6"),
+		"hwmode":  lucirpc.String("11g"),
+		"txpower": lucirpc.Integer(15),
 		"type":    lucirpc.String("mac80211"),
 	}
 	ok, err := client.CreateSection(ctx, "wireless", "wifi-device", "testing", options)
@@ -40,7 +42,9 @@ data "openwrt_wireless_wifi_device" "testing" {
 		),
 		Check: resource.ComposeAggregateTestCheckFunc(
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_device.testing", "id", "testing"),
-			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_device.testing", "channel", "auto"),
+			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_device.testing", "channel", "6"),
+			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_device.testing", "hwmode", "11g"),
+			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_device.testing", "txpower", "15"),
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_device.testing", "type", "mac80211"),
 		),
 	}
@@ -64,8 +68,10 @@ func TestResourceAcceptance(t *testing.T) {
 %s
 
 resource "openwrt_wireless_wifi_device" "testing" {
-	channel = "auto"
+	channel = "6"
+	hwmode = "11g"
 	id = "testing"
+	txpower = 15
 	type = "mac80211"
 }
 `,
@@ -73,7 +79,9 @@ resource "openwrt_wireless_wifi_device" "testing" {
 		),
 		Check: resource.ComposeAggregateTestCheckFunc(
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "id", "testing"),
-			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "channel", "auto"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "channel", "6"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "hwmode", "11g"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "txpower", "15"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "type", "mac80211"),
 		),
 	}
@@ -88,8 +96,11 @@ resource "openwrt_wireless_wifi_device" "testing" {
 
 resource "openwrt_wireless_wifi_device" "testing" {
 	band = "6g"
-	channel = "auto"
+	channel = "11"
+	hwmode = "11a"
+	htmode = "HE80"
 	id = "testing"
+	txpower = 20
 	type = "mac80211"
 }
 `,
@@ -98,7 +109,10 @@ resource "openwrt_wireless_wifi_device" "testing" {
 		Check: resource.ComposeAggregateTestCheckFunc(
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "id", "testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "band", "6g"),
-			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "channel", "auto"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "channel", "11"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "hwmode", "11a"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "htmode", "HE80"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "txpower", "20"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_device.testing", "type", "mac80211"),
 		),
 	}

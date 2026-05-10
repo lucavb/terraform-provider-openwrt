@@ -41,6 +41,14 @@ const (
 	encryptionMethodSAEMixed             = "sae-mixed"
 	encryptionMethodUCIOption            = "encryption"
 
+	disassocLowACKAttribute            = "disassoc_low_ack"
+	disassocLowACKAttributeDescription = "Disconnect clients that fail to acknowledge enough frames. Set to `false` to keep flaky clients connected."
+	disassocLowACKUCIOption            = "disassoc_low_ack"
+
+	ieee80211rAttribute            = "ieee80211r"
+	ieee80211rAttributeDescription = "Enable 802.11r fast transition."
+	ieee80211rUCIOption            = "ieee80211r"
+
 	isolateClientsAttribute            = "isolate"
 	isolateClientsAttributeDescription = "Isolate wireless clients from each other."
 	isolateClientsUCIOption            = "isolate"
@@ -80,6 +88,19 @@ var (
 		UpsertRequest:     lucirpcglue.UpsertRequestOptionString(modelGetDevice, deviceAttribute, deviceUCIOption),
 	}
 
+	disassocLowACKSchemaAttribute = lucirpcglue.BoolSchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
+		Description:       disassocLowACKAttributeDescription,
+		ReadResponse:      lucirpcglue.ReadResponseOptionBool(modelSetDisassocLowACK, disassocLowACKAttribute, disassocLowACKUCIOption),
+		ResourceExistence: lucirpcglue.NoValidation,
+		UpsertRequest:     lucirpcglue.UpsertRequestOptionBool(modelGetDisassocLowACK, disassocLowACKAttribute, disassocLowACKUCIOption),
+		Validators: []validator.Bool{
+			lucirpcglue.RequiresAttributeEqualString(
+				path.MatchRoot(modeAttribute),
+				modeAP,
+			),
+		},
+	}
+
 	encryptionMethodSchemaAttribute = lucirpcglue.StringSchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
 		Description:       encryptionMethodAttributeDescription,
 		ReadResponse:      lucirpcglue.ReadResponseOptionString(modelSetEncryptionMethod, encryptionMethodAttribute, encryptionMethodUCIOption),
@@ -108,6 +129,19 @@ var (
 				encryptionMethodPSKTKIPCCMP,
 				encryptionMethodSAE,
 				encryptionMethodSAEMixed,
+			),
+		},
+	}
+
+	ieee80211rSchemaAttribute = lucirpcglue.BoolSchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
+		Description:       ieee80211rAttributeDescription,
+		ReadResponse:      lucirpcglue.ReadResponseOptionBool(modelSetIEEE80211R, ieee80211rAttribute, ieee80211rUCIOption),
+		ResourceExistence: lucirpcglue.NoValidation,
+		UpsertRequest:     lucirpcglue.UpsertRequestOptionBool(modelGetIEEE80211R, ieee80211rAttribute, ieee80211rUCIOption),
+		Validators: []validator.Bool{
+			lucirpcglue.RequiresAttributeEqualString(
+				path.MatchRoot(modeAttribute),
+				modeAP,
 			),
 		},
 	}
@@ -170,8 +204,10 @@ var (
 	}
 
 	schemaAttributes = map[string]lucirpcglue.SchemaAttribute[model, lucirpc.Options, lucirpc.Options]{
+		disassocLowACKAttribute:   disassocLowACKSchemaAttribute,
 		deviceAttribute:           deviceSchemaAttribute,
 		encryptionMethodAttribute: encryptionMethodSchemaAttribute,
+		ieee80211rAttribute:       ieee80211rSchemaAttribute,
 		isolateClientsAttribute:   isolateClientsSchemaAttribute,
 		keyAttribute:              keySchemaAttribute,
 		krackWorkaroundAttribute:  krackWorkaroundSchemaAttribute,
@@ -210,8 +246,10 @@ func NewResource() resource.Resource {
 }
 
 type model struct {
+	DisassocLowACK   types.Bool   `tfsdk:"disassoc_low_ack"`
 	Device           types.String `tfsdk:"device"`
 	EncryptionMethod types.String `tfsdk:"encryption"`
+	IEEE80211R       types.Bool   `tfsdk:"ieee80211r"`
 	Id               types.String `tfsdk:"id"`
 	IsolateClients   types.Bool   `tfsdk:"isolate"`
 	Key              types.String `tfsdk:"key"`
@@ -221,8 +259,10 @@ type model struct {
 	SSID             types.String `tfsdk:"ssid"`
 }
 
+func modelGetDisassocLowACK(m model) types.Bool     { return m.DisassocLowACK }
 func modelGetDevice(m model) types.String           { return m.Device }
 func modelGetEncryptionMethod(m model) types.String { return m.EncryptionMethod }
+func modelGetIEEE80211R(m model) types.Bool         { return m.IEEE80211R }
 func modelGetId(m model) types.String               { return m.Id }
 func modelGetIsolateClients(m model) types.Bool     { return m.IsolateClients }
 func modelGetKey(m model) types.String              { return m.Key }
@@ -231,8 +271,10 @@ func modelGetMode(m model) types.String             { return m.Mode }
 func modelGetNetwork(m model) types.String          { return m.Network }
 func modelGetSSID(m model) types.String             { return m.SSID }
 
+func modelSetDisassocLowACK(m *model, value types.Bool)     { m.DisassocLowACK = value }
 func modelSetDevice(m *model, value types.String)           { m.Device = value }
 func modelSetEncryptionMethod(m *model, value types.String) { m.EncryptionMethod = value }
+func modelSetIEEE80211R(m *model, value types.Bool)         { m.IEEE80211R = value }
 func modelSetId(m *model, value types.String)               { m.Id = value }
 func modelSetIsolateClients(m *model, value types.Bool)     { m.IsolateClients = value }
 func modelSetKey(m *model, value types.String)              { m.Key = value }

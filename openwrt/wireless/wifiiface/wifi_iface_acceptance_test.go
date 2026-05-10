@@ -21,10 +21,12 @@ func TestDataSourceAcceptance(t *testing.T) {
 		t,
 	)
 	options := lucirpc.Options{
-		"device":  lucirpc.String("device-testing"),
-		"mode":    lucirpc.String("ap"),
-		"network": lucirpc.String("network-testing"),
-		"ssid":    lucirpc.String("ssid-testing"),
+		"device":           lucirpc.String("device-testing"),
+		"disassoc_low_ack": lucirpc.Boolean(false),
+		"ieee80211r":       lucirpc.Boolean(false),
+		"mode":             lucirpc.String("ap"),
+		"network":          lucirpc.String("network-testing"),
+		"ssid":             lucirpc.String("ssid-testing"),
 	}
 	ok, err := client.CreateSection(ctx, "wireless", "wifi-iface", "testing", options)
 	assert.NilError(t, err)
@@ -43,6 +45,8 @@ data "openwrt_wireless_wifi_iface" "testing" {
 		Check: resource.ComposeAggregateTestCheckFunc(
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "id", "testing"),
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "device", "device-testing"),
+			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "disassoc_low_ack", "false"),
+			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "ieee80211r", "false"),
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "mode", "ap"),
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "network", "network-testing"),
 			resource.TestCheckResourceAttr("data.openwrt_wireless_wifi_iface.testing", "ssid", "ssid-testing"),
@@ -69,7 +73,9 @@ func TestResourceAcceptance(t *testing.T) {
 
 resource "openwrt_wireless_wifi_iface" "testing" {
 	device = "device-testing"
+	disassoc_low_ack = true
 	id = "testing"
+	ieee80211r = true
 	mode = "ap"
 	network = "network-testing"
 	ssid = "ssid-testing"
@@ -80,6 +86,8 @@ resource "openwrt_wireless_wifi_iface" "testing" {
 		Check: resource.ComposeAggregateTestCheckFunc(
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "id", "testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "device", "device-testing"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "disassoc_low_ack", "true"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "ieee80211r", "true"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "mode", "ap"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "network", "network-testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "ssid", "ssid-testing"),
@@ -96,8 +104,10 @@ resource "openwrt_wireless_wifi_iface" "testing" {
 
 resource "openwrt_wireless_wifi_iface" "testing" {
 	device = "device-testing"
+	disassoc_low_ack = false
 	encryption = "sae"
 	id = "testing"
+	ieee80211r = false
 	key = "password"
 	mode = "ap"
 	network = "network-testing"
@@ -110,7 +120,9 @@ resource "openwrt_wireless_wifi_iface" "testing" {
 		Check: resource.ComposeAggregateTestCheckFunc(
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "id", "testing"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "device", "device-testing"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "disassoc_low_ack", "false"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "encryption", "sae"),
+			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "ieee80211r", "false"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "key", "password"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "mode", "ap"),
 			resource.TestCheckResourceAttr("openwrt_wireless_wifi_iface.testing", "network", "network-testing"),
